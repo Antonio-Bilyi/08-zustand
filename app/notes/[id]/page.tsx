@@ -7,11 +7,11 @@ interface NoteDetailsProps {
     params: Promise<{ id: string }>;
 }
 interface MetadataProps {
-    params: {id: string}
+    params: Promise<{ id: string }>,
 }
 
 export const generateMetadata = async ({ params }: MetadataProps): Promise<Metadata> => {
-    const { id } = params;
+    const { id } = await params;
     const data = await fetchNoteById(id);
 
     return {
