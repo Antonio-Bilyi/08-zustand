@@ -1,9 +1,14 @@
+"use client"
+
 import css from "./NoteForm.module.css"
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { useId } from "react";
 import * as Yup from "yup";
 import { createNote, type NewNote } from "../../lib/api"
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { useNoteDraftStore } from "@/lib/store/noteStore";
+
 
 interface FormValues {
     title: string;
@@ -24,13 +29,16 @@ const AddNoteSchema = Yup.object().shape({
 })
 
 
-interface NoteFormProps {
-    onCloseModal: () => void;
-}
-
-export default function NoteForm({onCloseModal}: NoteFormProps) {
+export default function NoteForm() {
     const fieldId = useId();
     const queryClient = useQueryClient();
+    const router = useRouter();
+    const { draft, setDraft, clearDraft } = useNoteDraftStore();
+
+    const handleChange = (event: React.ChangeEvent<
+        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        setDraft({ ...draft, [event.target.name]: event.target.value });
+    };
 
     const { mutate, isPending } = useMutation({
         mutationFn: (newNote: NewNote) => createNote(newNote),
@@ -38,7 +46,8 @@ export default function NoteForm({onCloseModal}: NoteFormProps) {
             queryClient.invalidateQueries({
                 queryKey: ["notes"],
             });
-            onCloseModal()
+            clearDraft();
+            router.push("/notes/filter/all");
         }
     })
 
@@ -64,6 +73,7 @@ export default function NoteForm({onCloseModal}: NoteFormProps) {
                         id={`${fieldId}-title`}
                         type="text"
                         name="title"
+                        onChange={handleChange}
                         className={css.input} />
                     <ErrorMessage
                         name="title"
@@ -79,6 +89,7 @@ export default function NoteForm({onCloseModal}: NoteFormProps) {
                         name="content"
                         rows={8}
                         id={`${fieldId}-content`}
+                        onChange={handleChange}
                         className={css.textarea}
                     >
                     </Field>
@@ -95,6 +106,7 @@ export default function NoteForm({onCloseModal}: NoteFormProps) {
                         as="select"
                         name="tag"
                         id={`${fieldId}-tag`}
+                        onChange={handleChange}
                         className={css.select}
                     >
                         <option value="Todo">Todo</option>
@@ -109,20 +121,13 @@ export default function NoteForm({onCloseModal}: NoteFormProps) {
                         className={css.error}
                     />
                 </div>
-
-                <div className={css.actions}>
-                    <button type="button" className={css.cancelButton} onClick={onCloseModal}>
-                        Cancel
-                    </button>
-                
-                    <button
+                <button
                         type="submit"
                         className={css.submitButton}
                         disabled={isPending}
                     >
                     {isPending ? "Creating..." : "Create note"}
                     </button>
-                </div>
             </Form>
     </Formik>
     )
