@@ -54,6 +54,12 @@
     background-color: #bb2d3b;
 }
 
+.link:hover,
+.link:focus {
+    opacity: 0.6;
+}
+
+
 .footer {
     display: flex;
     justify-content: space-between;

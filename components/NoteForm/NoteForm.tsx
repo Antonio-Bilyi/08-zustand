@@ -62,9 +62,10 @@ export default function NoteForm() {
 
     return (
         <Formik
-            initialValues={values}
+            initialValues={draft ?? values}
             validationSchema={AddNoteSchema}
             onSubmit={handleSubmit}
+            enableReinitialize
     >
             <Form className={css.form}>
                 <div className={css.formGroup}>
@@ -127,7 +128,15 @@ export default function NoteForm() {
                         disabled={isPending}
                     >
                     {isPending ? "Creating..." : "Create note"}
-                    </button>
+                </button>
+                
+                <button
+                    type="button"
+                    className={css.cancelButton}
+                    onClick={() => { clearDraft(); router.back()}}
+                >
+                    Cancel
+                </button>
             </Form>
     </Formik>
     )
